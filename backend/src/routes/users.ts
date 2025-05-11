@@ -1,27 +1,34 @@
-import express from 'express';
+import express, { Request } from 'express';
 import multer from 'multer';
 import path from 'path';
 import bcrypt from 'bcryptjs';
 import { authenticateToken } from '../middleware/auth';
 import { query } from '../db/db';
 
+interface AuthRequest extends Request {
+  user?: { id: number };
+  file?: Express.Multer.File;
+}
+
 const router = express.Router();
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => {
     cb(null, 'uploads/profile_pics/');
   },
-  filename: (req, file, cb) => {
+  filename: (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
+    // @ts-ignore
     const ext = path.extname(file.originalname);
+    // @ts-ignore
     cb(null, `user_${req.user.id}${ext}`);
   }
 });
 const upload = multer({ storage });
 
 // Update user profile
-router.put('/me', authenticateToken, upload.single('profilePic'), async (req, res) => {
-  const userId = req.user.id;
+router.put('/me', authenticateToken, upload.single('profilePic'), async (req: AuthRequest, res) => {
+  const userId = req.user!.id;
   const { email, username, password } = req.body;
   let profilePicPath;
 
@@ -72,7 +79,7 @@ router.put('/me', authenticateToken, upload.single('profilePic'), async (req, re
     console.log('Executing query:', queryStr, values);
     const result = await query(queryStr, values);
     res.json({ user: result.rows[0] });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Profile update error:', error);
     res.status(500).json({ error: 'Server error', details: error.message });
   }
