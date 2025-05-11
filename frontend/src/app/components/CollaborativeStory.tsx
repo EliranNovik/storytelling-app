@@ -32,6 +32,7 @@ const CollaborativeStory: React.FC<Props> = ({ storyId, userId, username, onStor
   const navigate = useNavigate();
   const ws = WebSocketService.getInstance();
   const isTyping = useRef(false);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Fetch story data
   useEffect(() => {
@@ -120,6 +121,14 @@ const CollaborativeStory: React.FC<Props> = ({ storyId, userId, username, onStor
     }, 1000);
   };
 
+  // Auto-expand textarea to fit content
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [content]);
+
   if (error) {
     return (
       <div className="p-4 text-red-600">
@@ -154,9 +163,11 @@ const CollaborativeStory: React.FC<Props> = ({ storyId, userId, username, onStor
         return null;
       })()}
       <textarea
-        className="w-full p-4 border rounded min-h-[200px]"
+        ref={textareaRef}
+        className="w-full p-4 border rounded min-h-[200px] resize-none"
         value={content}
         onChange={handleContentChange}
+        style={{ overflow: 'hidden' }}
       />
       <div className="mt-2 text-sm text-gray-500">
         Last edited at: {lastEditedAt ? new Date(lastEditedAt).toLocaleString() : 'N/A'}
