@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Comment from '../components/Comment';
-import CollaborativeStory from '../components/CollaborativeStory';
 import WebSocketService from '../services/websocket';
 
 const BACKEND_URL = 'http://localhost:3001';

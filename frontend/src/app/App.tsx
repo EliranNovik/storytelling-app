@@ -32,7 +32,7 @@ function App() {
 // Wrapper component to extract storyId from URL params
 const StoryWrapper = () => {
   const { id } = useParams<{ id: string }>();
-  return <CollaborativeStory storyId={parseInt(id!, 10)} />;
+  return <CollaborativeStory storyId={parseInt(id!, 10)} userId={1} username={"Guest"} />;
 };
 
 export default App; 
