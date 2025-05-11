@@ -8,6 +8,7 @@ import { createServer } from 'http';
 import CollaborativeEditingServer from './websocket';
 import { connectDB } from './db/db';
 import path from 'path';
+import axios from 'axios';
 
 // Load environment variables
 dotenv.config();
@@ -71,6 +72,24 @@ app.get('/', (req, res) => {
 });
 
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
+// Keep-alive ping function
+function selfPing() {
+  const urls = [
+    'https://storytelling-app.onrender.com/api/test', // Backend
+    'https://storytelling-app-front.onrender.com/'    // Frontend
+  ];
+  urls.forEach(url => {
+    axios.get(url)
+      .then(() => console.log(`[${new Date().toISOString()}] Pinged ${url}`))
+      .catch(err => console.error(`[${new Date().toISOString()}] Ping to ${url} failed:`, err.message));
+  });
+}
+
+// Immediately ping on start
+selfPing();
+// Ping every 30 minutes
+setInterval(selfPing, 30 * 60 * 1000);
 
 // Start server
 const startServer = async () => {

@@ -3,7 +3,10 @@ import axios from 'axios';
 /// <reference types="vite/client" />
 
 const api = axios.create({
-  baseURL: 'https://storytelling-app.onrender.com',
+  baseURL:
+    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3001'
+      : 'https://storytelling-app.onrender.com',
   headers: {
     'Content-Type': 'application/json',
   },

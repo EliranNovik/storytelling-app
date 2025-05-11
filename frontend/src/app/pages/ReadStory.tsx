@@ -31,6 +31,8 @@ const ReadStory = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [user, setUser] = useState<{ id: number; username: string } | null>(null);
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'created' | 'edited'>('created');
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
@@ -165,6 +167,24 @@ const ReadStory = () => {
     }
   };
 
+  // Filter and sort stories
+  const filteredStories = stories.filter(story => {
+    const searchLower = search.toLowerCase();
+    return (
+      story.title.toLowerCase().includes(searchLower) ||
+      story.author_name.toLowerCase().includes(searchLower)
+    );
+  }).sort((a, b) => {
+    if (sortBy === 'created') {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    } else {
+      // Use last comment date as edited date if available, else fallback to created_at
+      const aEdited = a.comments.length > 0 ? a.comments[0].created_at : a.created_at;
+      const bEdited = b.comments.length > 0 ? b.comments[0].created_at : b.created_at;
+      return new Date(bEdited).getTime() - new Date(aEdited).getTime();
+    }
+  });
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
@@ -189,11 +209,29 @@ const ReadStory = () => {
         Community Stories
       </h1>
       
-      {stories.length === 0 ? (
+      <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
+        <input
+          type="text"
+          className="input input-bordered w-full md:w-1/2"
+          placeholder="Search by title or author..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        <select
+          className="select select-bordered w-full md:w-1/4"
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value as 'created' | 'edited')}
+        >
+          <option value="created">Sort by Date Created</option>
+          <option value="edited">Sort by Date Edited</option>
+        </select>
+      </div>
+
+      {filteredStories.length === 0 ? (
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body text-center">
-            <h2 className="card-title justify-center text-2xl font-serif">No Stories Yet</h2>
-            <p className="text-gray-600">Be the first to share a story!</p>
+            <h2 className="card-title justify-center text-2xl font-serif">No Stories Found</h2>
+            <p className="text-gray-600">Try searching for a different term or checking back later.</p>
             <div className="card-actions justify-center mt-4">
               <Link to="/create" className="btn btn-primary btn-wide">
                 Create Story
@@ -204,9 +242,9 @@ const ReadStory = () => {
       ) : (
         <div className="grid gap-8">
           <div className="text-sm text-gray-500 text-center">
-            Found {stories.length} stories
+            Found {filteredStories.length} stories
           </div>
-          {stories.map((story) => (
+          {filteredStories.map((story) => (
             <div 
               key={story.id} 
               className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border border-base-200"
