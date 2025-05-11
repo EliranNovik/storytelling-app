@@ -4,14 +4,21 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Create a new pool instance with fallback to STORYTELLING database
-const pool = new Pool({
-  user: process.env.DB_USER || 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  database: 'STORYTELLING',
-  password: process.env.DB_PASSWORD || 'postgres',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+const pool = new Pool(
+  process.env.DATABASE_URL
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false }
+      }
+    : {
+        user: process.env.DB_USER || 'postgres',
+        host: process.env.DB_HOST || 'localhost',
+        database: process.env.DB_NAME || 'STORYTELLING',
+        password: process.env.DB_PASSWORD || 'postgres',
+        port: parseInt(process.env.DB_PORT || '5432'),
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+      }
+);
 
 // Test the connection
 const connectDB = async () => {
