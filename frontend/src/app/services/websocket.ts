@@ -74,7 +74,10 @@ class WebSocketService {
     // Clear any existing connection
     this.disconnect(true);
 
-    const wsUrl = `ws://localhost:3001/ws?token=${token}`;
+    const wsUrl =
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? `ws://localhost:3001/ws?token=${token}`
+        : `wss://storytelling-app.onrender.com/ws?token=${token}`;
     console.log('Connecting to WebSocket at:', wsUrl);
     
     try {
