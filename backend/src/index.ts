@@ -82,7 +82,7 @@ function selfPing() {
   urls.forEach(url => {
     axios.get(url)
       .then(() => console.log(`[${new Date().toISOString()}] Pinged ${url}`))
-      .catch(err => console.error(`[${new Date().toISOString()}] Ping to ${url} failed:`, err.message));
+      .catch((err: any) => console.error(`[${new Date().toISOString()}] Ping to ${url} failed:`, err.message));
   });
 }
 
