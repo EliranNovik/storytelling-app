@@ -112,30 +112,30 @@ const StoryView = () => {
   }
 
   return (
-    <div className="min-h-screen p-6 bg-base-200">
-      <div className="max-w-4xl mx-auto bg-base-100 rounded-lg shadow-xl p-6">
-        <h1 className="text-3xl font-bold mb-2">{story.title}</h1>
-        <div className="flex items-center gap-2 text-base-content/60 mb-6">
+    <div className="min-h-screen flex flex-col items-center p-0 md:p-6 min-h-0">
+      <div className="w-full max-w-7xl bg-base-100 rounded-lg shadow-xl p-2 md:p-8 flex flex-col flex-1 min-h-0 min-h-[80vh] md:min-h-[600px]">
+        <h1 className="text-2xl md:text-3xl font-bold mb-2 break-words">{story.title}</h1>
+        <div className="flex flex-col md:flex-row md:items-center gap-2 text-base-content/60 mb-6">
           <span>By {story.author_name || story.authorName}</span>
-          <span>•</span>
+          <span className="hidden md:inline">•</span>
           <span>{story.created_at && new Date(story.created_at).toLocaleDateString()}</span>
         </div>
-        
-        <CollaborativeStory
-          storyId={story.id}
-          userId={user.id}
-          username={user.username}
-          onStoryUpdate={(updatedStory) => {
-            setStory({
-              ...story,
-              ...updatedStory,
-              // Keep the original story metadata
-              author_name: story.author_name,
-              created_at: story.created_at
-            });
-          }}
-        />
-
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <CollaborativeStory
+            storyId={story.id}
+            userId={user.id}
+            username={user.username}
+            onStoryUpdate={(updatedStory) => {
+              setStory({
+                ...story,
+                ...updatedStory,
+                // Keep the original story metadata
+                author_name: story.author_name,
+                created_at: story.created_at
+              });
+            }}
+          />
+        </div>
         <div className="mt-8">
           <button
             onClick={() => navigate(-1)}

@@ -59,38 +59,40 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-base-200 flex flex-col justify-between relative">
-      {/* Background image overlay */}
-      <div className="absolute inset-0 z-0 flex justify-center items-center">
-        <img
-          src={libraryImage}
-          alt="Library background"
-          className="object-cover w-full h-full opacity-40"
-        />
-      </div>
-      {/* Main content */}
-      <div className="relative z-10 flex flex-col items-center justify-center flex-1">
-        <div className="bg-white/80 rounded-xl shadow-xl p-10 max-w-2xl w-full text-center mt-20 mb-10">
-          <h1 className="text-4xl font-extrabold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Welcome to the Storytelling App</h1>
-          <p className="text-lg text-gray-700 mb-6">Create, read, and collaborate on stories with a vibrant community of storytellers.</p>
-          <Link to="/create-story" className="btn btn-primary btn-lg">Start a New Story</Link>
-        </div>
-      </div>
-      {/* Overview tab at the bottom */}
-      <div className="relative z-10 w-full flex justify-center pb-8">
-        <div className="bg-white/90 rounded-2xl shadow-lg max-w-3xl w-full px-8 py-6 flex flex-col items-center">
-          <h2 className="text-2xl font-bold mb-4 text-primary">Overview</h2>
-          <div className="flex flex-col md:flex-row gap-6 w-full mb-4">
-            {stories.slice(0, 2).map((story) => (
-              <div key={story.id} className="flex-1 bg-base-100 rounded-xl shadow p-4 border border-base-200">
-                <h3 className="text-xl font-semibold mb-2 truncate">{story.title}</h3>
-                <p className="text-base-content/60 mb-2 truncate">By {story.author_name}</p>
-                <p className="text-gray-600 line-clamp-2 mb-2">{story.content}</p>
-                <Link to={`/stories/${story.id}`} className="btn btn-outline btn-primary btn-sm mt-2">Read</Link>
-              </div>
-            ))}
+    <div className="min-h-screen bg-base-200 flex flex-col">
+      <div className="container mx-auto w-full">
+        {/* Background image and welcome message */}
+        <div className="relative w-full" style={{ minHeight: '60vh' }}>
+          <img
+            src={libraryImage}
+            alt="Library background"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ zIndex: 0 }}
+          />
+          <div className="relative z-10 flex flex-col items-center justify-center min-h-[60vh]">
+            <div className="bg-white/80 rounded-xl shadow-xl p-10 max-w-2xl w-full text-center mt-20 mb-10">
+              <h1 className="text-4xl font-extrabold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Welcome to the Storytelling App</h1>
+              <p className="text-lg text-gray-700 mb-6">Create, read, and collaborate on stories with a vibrant community of storytellers.</p>
+              <Link to="/create-story" className="btn btn-primary btn-lg">Start a New Story</Link>
+            </div>
           </div>
-          <Link to="/read" className="btn btn-secondary btn-wide mt-2">Browse All Stories</Link>
+        </div>
+        {/* Overview tab below the background image */}
+        <div className="w-full pb-8 bg-base-200">
+          <div className="bg-white/90 rounded-2xl shadow-lg w-full px-8 py-6 flex flex-col items-center mt-8">
+            <h2 className="text-2xl font-bold mb-4 text-primary">Overview</h2>
+            <div className="flex flex-col md:flex-row gap-6 w-full mb-4">
+              {stories.slice(0, 2).map((story) => (
+                <div key={story.id} className="flex-1 bg-base-100 rounded-xl shadow p-4 border border-base-200">
+                  <h3 className="text-xl font-semibold mb-2 truncate">{story.title}</h3>
+                  <p className="text-base-content/60 mb-2 truncate">By {story.author_name}</p>
+                  <p className="text-gray-600 line-clamp-2 mb-2">{story.content}</p>
+                  <Link to={`/stories/${story.id}`} className="btn btn-outline btn-primary btn-sm mt-2">Read</Link>
+                </div>
+              ))}
+            </div>
+            <Link to="/read" className="btn btn-secondary btn-wide mt-2">Browse All Stories</Link>
+          </div>
         </div>
       </div>
     </div>

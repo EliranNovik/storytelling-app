@@ -139,26 +139,29 @@ const CollaborativeStory: React.FC<Props> = ({ storyId, userId, username, onStor
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      {(() => {
-        const normalizedUsername = username.trim().toLowerCase();
-        const othersTyping = Array.from(typingUsers)
-          .filter(name => typeof name === 'string' && name.trim().toLowerCase() !== normalizedUsername);
-        if (othersTyping.length > 0) {
-          return (
-            <div className="mb-4 text-gray-600 italic">
-              {othersTyping.join(', ')} {othersTyping.length === 1 ? 'is' : 'are'} typing...
-            </div>
-          );
-        }
-        return null;
-      })()}
-      <textarea
-        className="w-full p-4 border rounded min-h-[200px]"
-        value={content}
-        onChange={handleContentChange}
-      />
-      <div className="mt-2 text-sm text-gray-500">
+    <div className="w-full h-full min-h-0 flex flex-col flex-1 p-0 md:p-4">
+      <div className="flex-1 min-h-0 flex flex-col">
+        {(() => {
+          const normalizedUsername = username.trim().toLowerCase();
+          const othersTyping = Array.from(typingUsers)
+            .filter(name => typeof name === 'string' && name.trim().toLowerCase() !== normalizedUsername);
+          if (othersTyping.length > 0) {
+            return (
+              <div className="mb-4 text-gray-600 italic">
+                {othersTyping.join(', ')} {othersTyping.length === 1 ? 'is' : 'are'} typing...
+              </div>
+            );
+          }
+          return null;
+        })()}
+        <textarea
+          className="w-full h-full min-h-[400px] md:min-h-[600px] p-4 border rounded flex-1 resize-none"
+          value={content}
+          onChange={handleContentChange}
+          style={{ height: '100%' }}
+        />
+      </div>
+      <div className="text-sm text-gray-500 pt-2">
         Last edited at: {lastEditedAt ? new Date(lastEditedAt).toLocaleString() : 'N/A'}
         {lastEditedBy && (
           <span> by {story?.last_edited_by_name || story?.author_name}</span>

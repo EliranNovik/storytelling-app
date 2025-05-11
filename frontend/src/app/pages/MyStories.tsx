@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import bookImage from '../assets/images/book.jpg';
 
 interface Story {
   id: number;
@@ -65,8 +66,10 @@ const MyStories = () => {
   }
 
   return (
-    <div className="min-h-screen p-6 bg-base-200">
-      <div className="max-w-4xl mx-auto">
+    <div className="relative min-h-screen p-6 bg-base-200" style={{ backgroundImage: `url(${bookImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      {/* Overlay to soften the background image */}
+      <div className="absolute inset-0 bg-white/60 pointer-events-none" />
+      <div className="relative max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             My Stories

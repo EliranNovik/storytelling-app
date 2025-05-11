@@ -80,7 +80,7 @@ const Navbar = () => {
             )}
           </ul>
         </div>
-        <Link to="/" className="btn btn-ghost normal-case text-xl">Storytelling App</Link>
+        <Link to="/" className="btn btn-ghost normal-case text-xl">Scribly</Link>
       </div>
       <div className="navbar-end hidden lg:flex">
         {user ? (

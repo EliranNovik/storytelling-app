@@ -187,7 +187,7 @@ const ReadStory = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
+      <div className="flex justify-center items-center min-h-[60vh] bg-base-200">
         <span className="loading loading-spinner loading-lg"></span>
       </div>
     );
