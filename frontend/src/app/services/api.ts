@@ -3,7 +3,7 @@ import axios from 'axios';
 /// <reference types="vite/client" />
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: 'https://storytelling-app.onrender.com',
   headers: {
     'Content-Type': 'application/json',
   },
