@@ -30,7 +30,8 @@ app.use(cors({
     'http://localhost:5174',  // Alternative Vite port
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5174',
-    'http://localhost:3000'   // Just in case using React's default port
+    'http://localhost:3000',  // Just in case using React's default port
+    'https://storytelling-app-front.onrender.com' // Deployed frontend domain
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
