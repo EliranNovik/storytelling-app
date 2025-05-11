@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import Comment from '../components/Comment';
 import WebSocketService from '../services/websocket';
-
-const BACKEND_URL = 'http://localhost:3001';
 
 interface Story {
   id: number;
@@ -49,16 +47,14 @@ const ReadStory = () => {
   useEffect(() => {
     const fetchStories = async () => {
       try {
-        console.log('Fetching stories from:', `${BACKEND_URL}/api/stories`);
-        const response = await axios.get(`${BACKEND_URL}/api/stories`);
+        console.log('Fetching stories from:', `/api/stories`);
+        const response = await api.get('/api/stories');
         console.log('Stories response:', response);
         
         // Initialize each story with empty comments and comment state
         const storiesWithComments = await Promise.all(
           response.data.map(async (story: Story) => {
-            const commentsResponse = await axios.get(
-              `${BACKEND_URL}/api/stories/${story.id}/comments`
-            );
+            const commentsResponse = await api.get(`/api/stories/${story.id}/comments`);
             return {
               ...story,
               comments: commentsResponse.data,
@@ -113,8 +109,8 @@ const ReadStory = () => {
         return;
       }
 
-      const response = await axios.post(
-        `${BACKEND_URL}/api/stories/${storyId}/comments`,
+      const response = await api.post(
+        `/api/stories/${storyId}/comments`,
         { content: story.newComment },
         {
           headers: {
@@ -155,7 +151,7 @@ const ReadStory = () => {
         return;
       }
 
-      await axios.delete(`${BACKEND_URL}/api/stories/${storyId}`, {
+      await api.delete(`/api/stories/${storyId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

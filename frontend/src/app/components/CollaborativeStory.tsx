@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import WebSocketService from '../services/websocket';
-import axios from 'axios';
+import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
 
@@ -37,7 +37,7 @@ const CollaborativeStory: React.FC<Props> = ({ storyId, userId, username, onStor
   useEffect(() => {
     const fetchStory = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/api/stories/${storyId}`);
+        const response = await api.get(`/api/stories/${storyId}`);
         setStory(response.data);
         setContent(response.data.content);
         setLastEditedAt(response.data.last_edited_at);
