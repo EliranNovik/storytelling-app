@@ -85,4 +85,15 @@ router.put('/me', authenticateToken, upload.single('profilePic'), async (req: Au
   }
 });
 
+// Get all users (for tagging)
+router.get('/all', async (req, res) => {
+  try {
+    const result = await query('SELECT id, username FROM users ORDER BY username ASC');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
 export default router; 

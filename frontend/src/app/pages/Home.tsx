@@ -70,10 +70,10 @@ const Home = () => {
             style={{ zIndex: 0 }}
           />
           <div className="relative z-10 flex flex-col items-center justify-center min-h-[60vh]">
-            <div className="bg-white/80 rounded-xl shadow-xl p-10 max-w-2xl w-full text-center mt-20 mb-10">
-              <h1 className="text-4xl font-extrabold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Welcome to the Storytelling App</h1>
-              <p className="text-lg text-gray-700 mb-6">Create, read, and collaborate on stories with a vibrant community of storytellers.</p>
-              <Link to="/create-story" className="btn btn-primary btn-lg">Start a New Story</Link>
+            <div className="bg-white/80 rounded-xl shadow-xl p-4 max-w-sm w-full text-center mt-6 mb-6 md:p-10 md:max-w-2xl md:mt-20 md:mb-10">
+              <h1 className="text-3xl md:text-4xl font-extrabold mb-3 md:mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Welcome to Scribly</h1>
+              <p className="text-base md:text-lg text-gray-700 mb-5 md:mb-6">Create, read, and collaborate on stories with a vibrant community of storytellers.</p>
+              <Link to="/create-story" className="btn btn-primary btn-md md:btn-lg">Start a New Story</Link>
             </div>
           </div>
         </div>

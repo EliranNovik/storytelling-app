@@ -422,4 +422,116 @@ router.put('/blocks/:blockId', authenticateToken, async (req: AuthenticatedReque
   }
 });
 
+// Tag a user on a story
+router.post('/:id/tag', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { id } = req.params;
+    const { taggedUserId } = req.body;
+    const taggedByUserId = req.user?.id;
+    if (!taggedUserId) {
+      return res.status(400).json({ error: 'taggedUserId is required' });
+    }
+    // Prevent tagging self
+    if (parseInt(taggedUserId) === taggedByUserId) {
+      return res.status(400).json({ error: 'You cannot tag yourself' });
+    }
+    // Check if already tagged
+    const exists = await query(
+      'SELECT 1 FROM story_tags WHERE story_id = $1 AND tagged_user_id = $2',
+      [id, taggedUserId]
+    );
+    if (exists.rows.length > 0) {
+      return res.status(400).json({ error: 'User already tagged on this story' });
+    }
+    await query(
+      'INSERT INTO story_tags (story_id, tagged_user_id, tagged_by_user_id) VALUES ($1, $2, $3)',
+      [id, taggedUserId, taggedByUserId]
+    );
+    res.json({ message: 'User tagged successfully' });
+  } catch (error) {
+    console.error('Error tagging user:', error);
+    res.status(500).json({ error: 'Failed to tag user' });
+  }
+});
+
+// Get stories where a user is tagged
+router.get('/tagged/:userId', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { userId } = req.params;
+    // Only allow the user to fetch their own tagged stories
+    if (req.user?.id !== parseInt(userId)) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+    const result = await query(`
+      SELECT 
+        s.id, s.title, s.content, s.created_at,
+        u.username as author_name,
+        t.tagged_by_user_id,
+        u2.username as tagged_by_username,
+        t.created_at as tagged_at
+      FROM story_tags t
+      JOIN stories s ON t.story_id = s.id
+      JOIN users u ON s.author_id = u.id
+      JOIN users u2 ON t.tagged_by_user_id = u2.id
+      WHERE t.tagged_user_id = $1
+      ORDER BY t.created_at DESC
+    `, [userId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching tagged stories:', error);
+    res.status(500).json({ error: 'Failed to fetch tagged stories' });
+  }
+});
+
+// Like or dislike a story
+router.post('/:id/like', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { id } = req.params;
+    const { value } = req.body;
+    const userId = req.user?.id;
+    if (![1, -1].includes(value)) {
+      return res.status(400).json({ error: 'Value must be 1 (like) or -1 (dislike)' });
+    }
+    // Upsert like/dislike
+    await query(
+      `INSERT INTO story_likes (story_id, user_id, value)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (story_id, user_id)
+       DO UPDATE SET value = $3, created_at = NOW()`,
+      [id, userId, value]
+    );
+    res.json({ message: value === 1 ? 'Liked' : 'Disliked' });
+  } catch (error) {
+    console.error('Error liking/disliking story:', error);
+    res.status(500).json({ error: 'Failed to like/dislike story' });
+  }
+});
+
+// Get like/dislike counts and user's vote for a story
+router.get('/:id/likes', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+    const counts = await query(
+      `SELECT
+         SUM(CASE WHEN value = 1 THEN 1 ELSE 0 END) AS likes,
+         SUM(CASE WHEN value = -1 THEN 1 ELSE 0 END) AS dislikes
+       FROM story_likes WHERE story_id = $1`,
+      [id]
+    );
+    const userVote = await query(
+      'SELECT value FROM story_likes WHERE story_id = $1 AND user_id = $2',
+      [id, userId]
+    );
+    res.json({
+      likes: parseInt(counts.rows[0].likes) || 0,
+      dislikes: parseInt(counts.rows[0].dislikes) || 0,
+      userVote: userVote.rows[0]?.value || 0
+    });
+  } catch (error) {
+    console.error('Error fetching like/dislike counts:', error);
+    res.status(500).json({ error: 'Failed to fetch like/dislike counts' });
+  }
+});
+
 export default router; 

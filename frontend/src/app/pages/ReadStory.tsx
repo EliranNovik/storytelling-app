@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import Comment from '../components/Comment';
@@ -26,6 +26,23 @@ interface StoryWithComments extends Story {
   isAddingComment: boolean;
 }
 
+interface TaggedStory {
+  id: number;
+  title: string;
+  content: string;
+  created_at: string;
+  author_name: string;
+  tagged_by_user_id: number;
+  tagged_by_username: string;
+  tagged_at: string;
+}
+
+interface LikeInfo {
+  likes: number;
+  dislikes: number;
+  userVote: number;
+}
+
 const ReadStory = () => {
   const [stories, setStories] = useState<StoryWithComments[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +50,8 @@ const ReadStory = () => {
   const [user, setUser] = useState<{ id: number; username: string } | null>(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'created' | 'edited'>('created');
+  const [taggedStories, setTaggedStories] = useState<TaggedStory[]>([]);
+  const [likeInfo, setLikeInfo] = useState<{ [storyId: number]: LikeInfo }>({});
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
@@ -93,6 +112,42 @@ const ReadStory = () => {
       ws.connect(token);
     }
   }, []); // Empty dependency array means this only runs on mount/unmount
+
+  useEffect(() => {
+    if (user) {
+      api.get(`/api/stories/tagged/${user.id}`)
+        .then(res => setTaggedStories(res.data))
+        .catch(err => console.error('Error fetching tagged stories:', err));
+    }
+  }, [user]);
+
+  // Fetch like/dislike info for all stories
+  const fetchLikeInfo = useCallback((storyIds: number[]) => {
+    if (!user) return;
+    storyIds.forEach(id => {
+      api.get(`/api/stories/${id}/likes`)
+        .then(res => setLikeInfo(prev => ({ ...prev, [id]: res.data })))
+        .catch(() => {});
+    });
+  }, [user]);
+
+  useEffect(() => {
+    if (stories.length > 0 && user) {
+      fetchLikeInfo(stories.map(s => s.id));
+    }
+  }, [stories, user, fetchLikeInfo]);
+
+  const handleLike = async (storyId: number, value: 1 | -1) => {
+    if (!user) return;
+    try {
+      await api.post(`/api/stories/${storyId}/like`, { value });
+      // Refresh like info for this story
+      const res = await api.get(`/api/stories/${storyId}/likes`);
+      setLikeInfo(prev => ({ ...prev, [storyId]: res.data }));
+    } catch (err) {
+      // Optionally show error
+    }
+  };
 
   const handleCommentChange = (storyId: number, value: string) => {
     setStories(stories.map(story => 
@@ -227,6 +282,28 @@ const ReadStory = () => {
         </select>
       </div>
 
+      {/* Tagged Stories Section */}
+      {user && taggedStories.length > 0 && (
+        <div className="mb-10">
+          <h2 className="text-xl font-bold mb-4 text-primary">Stories You're Tagged In</h2>
+          <div className="grid gap-6 mb-4">
+            {taggedStories.map(story => (
+              <div key={story.id} className="card bg-primary/10 border border-primary/30 shadow p-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+                  <div>
+                    <h3 className="text-lg font-semibold text-primary mb-1">{story.title}</h3>
+                    <span className="text-sm text-gray-500">By {story.author_name} • {new Date(story.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <span className="badge badge-primary badge-outline text-xs px-3 py-1">Tagged by {story.tagged_by_username}</span>
+                </div>
+                <p className="text-gray-700 mb-2 line-clamp-2">{story.content.length > 120 ? story.content.slice(0, 120) + '...' : story.content}</p>
+                <Link to={`/stories/${story.id}`} className="btn btn-primary btn-sm mt-2">Read & Collaborate</Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {filteredStories.length === 0 ? (
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body text-center">
@@ -298,7 +375,25 @@ const ReadStory = () => {
                   </p>
                 </div>
                 <div className="flex justify-between items-center mt-6 pt-4 border-t border-base-200">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-4">
+                    <button
+                      className={`btn btn-sm ${likeInfo[story.id]?.userVote === 1 ? 'btn-success' : 'btn-ghost'}`}
+                      onClick={() => handleLike(story.id, 1)}
+                      disabled={!user}
+                      title="Like"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 9V5a3 3 0 013-3h2a2 2 0 012 2v12a2 2 0 01-2 2h-7.28a2 2 0 01-1.94-1.515l-1.36-5.447A1 1 0 018 10V5a1 1 0 011-1h3z" /></svg>
+                      {likeInfo[story.id]?.likes || 0}
+                    </button>
+                    <button
+                      className={`btn btn-sm ${likeInfo[story.id]?.userVote === -1 ? 'btn-error' : 'btn-ghost'}`}
+                      onClick={() => handleLike(story.id, -1)}
+                      disabled={!user}
+                      title="Dislike"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 15v4a3 3 0 01-3 3H5a2 2 0 01-2-2V8a2 2 0 012-2h7.28a2 2 0 011.94 1.515l1.36 5.447A1 1 0 0116 14v5a1 1 0 01-1 1h-3z" /></svg>
+                      {likeInfo[story.id]?.dislikes || 0}
+                    </button>
                     <Link
                       to={`/stories/${story.id}`}
                       className="btn btn-primary btn-sm"

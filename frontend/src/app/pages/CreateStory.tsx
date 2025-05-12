@@ -14,12 +14,23 @@ const CreateStory = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [taggedUserIds, setTaggedUserIds] = useState<number[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const user = localStorage.getItem('user');
-    if (!user) {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
       navigate('/login');
+      return;
     }
+    const user = JSON.parse(userStr) as User;
+    setCurrentUser(user);
+    // Fetch all users for tagging
+    api.get('/api/users/all').then(res => {
+      // Exclude self from tagging
+      setAllUsers(res.data.filter((u: User) => u.id !== user.id));
+    });
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,13 +45,17 @@ const CreateStory = () => {
     }
 
     try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}') as User;
-      await api.post('/api/stories', {
+      const user = currentUser;
+      const storyRes = await api.post('/api/stories', {
         title,
         content,
-        author_id: user.id
+        author_id: user?.id
       });
-
+      const storyId = storyRes.data.id;
+      // Tag selected users
+      for (const taggedUserId of taggedUserIds) {
+        await api.post(`/api/stories/${storyId}/tag`, { taggedUserId });
+      }
       navigate('/my-stories');
     } catch (error: any) {
       setError(error.response?.data?.message || 'Failed to create story');
@@ -92,6 +107,25 @@ const CreateStory = () => {
               placeholder="Write your story here..."
               required
             />
+          </div>
+
+          <div>
+            <label className="label">
+              <span className="label-text">Tag Users (optional)</span>
+            </label>
+            <select
+              multiple
+              className="select select-bordered w-full h-32"
+              value={taggedUserIds.map(String)}
+              onChange={e => {
+                const options = Array.from(e.target.selectedOptions);
+                setTaggedUserIds(options.map(opt => Number(opt.value)));
+              }}
+            >
+              {allUsers.map(user => (
+                <option key={user.id} value={user.id}>{user.username}</option>
+              ))}
+            </select>
           </div>
 
           <div className="flex justify-end space-x-4">
